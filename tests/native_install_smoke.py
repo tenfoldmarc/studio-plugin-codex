@@ -84,6 +84,18 @@ def main(compatibility=False):
             assert json.loads((installed / 'plugin.json').read_text())['version'] == '1.0.1'
             assert (installed / 'marker.txt').read_text() == 'new files arrived'
             print('UPDATE', second, flush=True)
+            # Codex-specific packaging changes can retain the shared Claude feature
+            # version. An explicit update must still install the new source files.
+            (plugin / 'marker.txt').write_text('same version packaging update')
+            run(['git', 'add', '.'], source)
+            run(['git', 'commit', '-m', 'Packaging update with unchanged feature version'], source)
+            run(['git', 'push', str(remote), 'main'], source)
+            run(['git', 'update-server-info'], remote)
+            run(['codex', 'plugin', 'marketplace', 'upgrade', market, '--json'])
+            same_version = json.loads(run(['codex', 'plugin', 'add', selector, '--json']))
+            installed = Path(same_version['installedPath'])
+            assert json.loads((installed / 'plugin.json').read_text())['version'] == '1.0.1'
+            assert (installed / 'marker.txt').read_text() == 'same version packaging update'
             print(f'PASS: native Git install and update replaced cached files (compatibility={compatibility}).', flush=True)
         finally:
             if registered:

@@ -1,0 +1,6 @@
+{
+  "version": "2.7.0",
+  "repository": "https://github.com/tenfoldmarc/studio-plugin",
+  "commit": "389c2223e4492287e67534e7ea8436d56ee070dc",
+  "manifest": "video-studio/.claude-plugin/plugin.json"
+}

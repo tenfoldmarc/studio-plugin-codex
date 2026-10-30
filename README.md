@@ -1,5 +1,8 @@
 # Creator Studio for Codex
 
+Current product version: **2.7.0**, matching the Claude edition. The exact source snapshot is recorded in
+`video-studio/upstream.json`.
+
 Film your clips, then ask Codex to edit them. Includes the existing editing engine, caption styles,
 effects, named editing styles, reference-video analysis and style recreation, video-to-carousel workflows,
 carousel rendering, and posting helpers. The video and carousel workflows are bundled together.
@@ -83,10 +86,15 @@ not imported or modified automatically. `VIDEO_STUDIO_STATE` / `SCRIPT_STUDIO_ST
 
 ## Ship a release
 
-1. Develop on a branch and run the automated checks.
-2. Update `video-studio/plugin.json` and `video-studio/.codex-plugin/plugin.json` to the same higher `X.Y.Z` version.
-3. Add the same version to `whats-new.json` and commit the complete release.
-4. Merge into `main` and push this Codex repository. Customers' next update request installs that release.
+1. Choose the Claude feature release to match, review its source changes, and port the relevant functionality on a branch.
+2. Run the automated checks and validate the affected workflows. Version equality alone does not establish feature parity.
+3. Set `video-studio/plugin.json` and `video-studio/.codex-plugin/plugin.json` to that same Claude `X.Y.Z` feature version.
+4. Record the exact Claude version and commit in `video-studio/upstream.json`, update the version shown above, and add release notes to `whats-new.json`.
+5. Merge into `main` and push this Codex repository. Customers' next update request installs that release.
+
+Keep product feature numbers aligned across hosts rather than incrementing them independently. Codex-specific
+packaging fixes can be documented in the existing release notes and Git history; an explicit update request
+refreshes and reinstalls the tracked package even when the feature version is unchanged.
 
 Use `python -m unittest discover -s tests` for package/updater checks. Creator Studio also retains the inherited
 cross-platform media end-to-end workflow. Local install/update smoke checks are separate from real-video quality

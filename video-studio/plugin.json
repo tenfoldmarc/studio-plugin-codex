@@ -6,7 +6,7 @@
     "url": "https://github.com/tenfoldmarc"
   },
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "version": "1.0.1",
+  "version": "2.7.0",
   "repository": "https://github.com/tenfoldmarc/studio-plugin-codex",
   "homepage": "https://portal.tenfoldmarketing.com",
   "extensions": {

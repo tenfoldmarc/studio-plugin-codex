@@ -1,4 +1,5 @@
 {
   "1.0.0": "First Codex release: native installation, individual and combined updates, and separate Codex settings.",
-  "1.0.1": "Verify registered versioned and local Codex caches; resolve Creator Studio setup through the installed dependency."
+  "1.0.1": "Verify registered versioned and local Codex caches; resolve Creator Studio setup through the installed dependency.",
+  "2.7.0": "Matches Claude Creator Studio 2.7.0, based on source commit 389c2223e449. Includes Codex installation, combined native updates, and separate Codex settings."
 }

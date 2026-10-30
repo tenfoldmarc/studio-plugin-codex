@@ -24,6 +24,8 @@ class PackageTests(unittest.TestCase):
         self.assertEqual(manifest['name'], PRODUCT)
         self.assertEqual(manifest['version'], compatibility['version'])
         self.assertIn(manifest['version'], notes)
+        upstream = json.loads((ROOT / PRODUCT / 'upstream.json').read_text(encoding='utf-8'))
+        self.assertEqual(manifest['version'], upstream['version'])
         catalog = json.loads((ROOT / '.agents/plugins/marketplace.json').read_text())
         self.assertEqual(catalog['name'], U.PRODUCTS[PRODUCT]['marketplace'])
         self.assertEqual(catalog['plugins'][0]['source']['path'], './' + PRODUCT)
