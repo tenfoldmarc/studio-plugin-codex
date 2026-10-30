@@ -24,6 +24,12 @@ jobs:
         run: python -m unittest discover -s tests
       - name: Native Git marketplace install and update
         run: python tests/native_install_smoke.py
+      - name: Install the customer's static FFmpeg package
+        run: |
+          python -m pip install "requests>=2,<3" "filelock>=3" progress==1.6.1
+          python -m pip install --no-deps static-ffmpeg==3.0
+      - name: Sideways phone zoom and twelve-cut lip sync regressions
+        run: python ci/assembly_regression.py
       - name: Validate PowerShell starters
         if: runner.os == 'Windows'
         shell: pwsh

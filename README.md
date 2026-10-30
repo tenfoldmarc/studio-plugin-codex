@@ -1,7 +1,10 @@
 # Creator Studio for Codex
 
-Current product version: **2.7.0**, matching the Claude edition. The exact source snapshot is recorded in
+Current product version: **2.7.1**, matching the Claude edition. The exact source snapshot is recorded in
 `video-studio/upstream.json`.
+
+2.7.1 fixes punch-in zooms on sideways iPhone clips and audio/video drift across cuts. These are the same
+assembly changes released in Claude 2.7.1; the Codex installer, updater and separate settings remain in place.
 
 Film your clips, then ask Codex to edit them. Includes the existing editing engine, caption styles,
 effects, named editing styles, reference-video analysis and style recreation, video-to-carousel workflows,
@@ -99,6 +102,13 @@ refreshes and reinstalls the tracked package even when the feature version is un
 Use `python -m unittest discover -s tests` for package/updater checks. Creator Studio also retains the inherited
 cross-platform media end-to-end workflow. Local install/update smoke checks are separate from real-video quality
 and Windows testing; passing packaging tests alone does not establish editing quality on every machine.
+
+The targeted assembly suite runs with `STUDIO_RUN_MEDIA_TESTS=1` and ffmpeg/ffprobe available. It tests 90/270-degree
+phone rotation with punch-in zoom, matching video flashes and audio pulses across twelve fractional-frame cuts
+(at most 10 ms error), exact intermediate audio/video lengths, and cuts reaching beyond the source's end.
+`python ci/assembly_regression.py` runs it against the same `static-ffmpeg==3.0` package used by Studio setup,
+after installing that package and its runtime dependencies listed in the script. CI runs it on Windows, macOS
+and Linux without downloading transcription models or touching customer data.
 
 Private distribution: give each buyer access to every repository included in their purchase. Removing GitHub
 access prevents future downloads/updates; it does not erase already downloaded files. No license key is bundled.

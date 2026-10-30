@@ -1,8 +1,8 @@
 # Codex edition provenance
 
 This is the separately maintained Codex edition of https://github.com/tenfoldmarc/studio-plugin.
-Claude feature version: **2.7.0**.
-Source commit: `389c2223e4492287e67534e7ea8436d56ee070dc`. The original Claude repository was read only during this port.
+Claude feature version: **2.7.1**.
+Source commit: `79932055fff1efed64c08bb334abf4651751380f`. The original Claude repository was read only during this port.
 The same source version and commit are bundled in `video-studio/upstream.json`.
 
 Codex and Claude use the same product feature version. A matching number is a tracking convention:
