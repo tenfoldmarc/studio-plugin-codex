@@ -70,8 +70,8 @@ codex plugin marketplace upgrade script-studio-codex
 codex plugin add script-studio@script-studio-codex
 ```
 
-Codex calls these local package caches `local`; release versions are read from `plugin.json` rather than the
-cache folder name. The helper checks private releases using authenticated Git, not unauthenticated raw URLs.
+Codex may use a versioned cache or a cache called `local`; the updater uses the registered cache key and
+reads the actual release from `plugin.json`. The helper checks private releases using authenticated Git, not unauthenticated raw URLs.
 
 ## Your data
 

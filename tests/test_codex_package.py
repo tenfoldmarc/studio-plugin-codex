@@ -35,7 +35,7 @@ class PackageTests(unittest.TestCase):
     def test_bundled_python_compiles(self):
         for file in (ROOT / PRODUCT).rglob('*.py'):
             with self.subTest(file=str(file.relative_to(ROOT))):
-                compile(file.read_text(), str(file), 'exec')
+                compile(file.read_text(encoding='utf-8'), str(file), 'exec')
 
 
 class UpdateTests(unittest.TestCase):
@@ -53,7 +53,13 @@ class UpdateTests(unittest.TestCase):
     def test_actual_release_is_read_from_local_cache_manifest(self):
         folder = self.base / 'plugins/cache' / self.market / self.product / 'local'
         self.manifest(folder)
-        self.assertEqual(U.installed_version(self.product, self.base), '1.0.1')
+        self.assertEqual(U.installed_version(self.product, self.base, entry={'version': 'local'}), '1.0.1')
+
+    def test_versioned_cache_uses_registered_version_not_highest_directory(self):
+        folder = self.base / 'plugins/cache' / self.market / self.product
+        self.manifest(folder / '1.0.1', version='1.0.1')
+        self.manifest(folder / '9.0.0', version='9.0.0')
+        self.assertEqual(U.installed_version(self.product, self.base, entry={'version': '1.0.1'}), '1.0.1')
 
     def test_wrong_product_and_invalid_version_are_rejected(self):
         self.manifest(self.base, product='other-plugin')

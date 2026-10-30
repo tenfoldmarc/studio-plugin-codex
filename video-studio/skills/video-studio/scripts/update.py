@@ -107,11 +107,18 @@ def validate_source(market, product):
         raise UpdateError('This marketplace is not tracking the official Codex repository. Follow the portal installation steps.')
 
 
-def installed_version(product, codex_dir=None):
-    # Local entries are cached under "local", not under the package's version number.
-    # Read the manifest itself; directory names and CLI version="local" are not release versions.
+def installed_version(product, codex_dir=None, entry=None):
+    # Use Codex's registered cache key. Portable-only packages can be called "local";
+    # compatibility manifests can produce a versioned directory. Never guess "local"
+    # or select the highest folder (which might be an older, inactive installation).
     codex_dir = Path(codex_dir or os.environ.get('CODEX_HOME') or Path.home() / '.codex')
-    cached = codex_dir / 'plugins/cache' / PRODUCTS[product]['marketplace'] / product / 'local'
+    if entry is None:
+        executable = codex_program()
+        entry = installed_entry(executable, product) if executable else None
+    cache_key = (entry or {}).get('version')
+    if not cache_key or not re.fullmatch(r'local|\d+\.\d+\.\d+', cache_key):
+        raise UpdateError('Could not identify the registered plugin cache.')
+    cached = codex_dir / 'plugins/cache' / PRODUCTS[product]['marketplace'] / product / cache_key
     return version_at(cached, product)
 
 
@@ -121,7 +128,7 @@ def update_one(executable, product, install=False):
     if not entry and not install:
         print(f'STATUS update SKIPPED {info["title"]}: not installed.', flush=True)
         return False
-    before = installed_version(product) if entry else None
+    before = installed_version(product, entry=entry) if entry else None
     market = marketplace_entry(executable, product)
     if not market:
         if not install:
@@ -189,9 +196,10 @@ def check(state=None, force=False):
     if not executable:
         return None
     try:
-        if not installed_entry(executable, product):
+        entry = installed_entry(executable, product)
+        if not entry:
             return None
-        before = installed_version(product)
+        before = installed_version(product, entry=entry)
         cache = Path(state or state_dir(product)) / 'update-check.json'
         today = datetime.date.today().isoformat()
         try:

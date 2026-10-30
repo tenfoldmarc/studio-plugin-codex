@@ -27,7 +27,7 @@ class Quiet(SimpleHTTPRequestHandler):
         pass
 
 
-def main():
+def main(compatibility=False):
     market = 'studio-codex-test-' + uuid.uuid4().hex[:10]
     selector = 'smoke-video@' + market
     with tempfile.TemporaryDirectory(prefix='native-smoke-', dir=Path(__file__).parent) as scratch:
@@ -42,6 +42,9 @@ def main():
         (plugin / 'skills/smoke/SKILL.md').write_text('---\nname: smoke\ndescription: Disposable plugin validation.\n---\nTest fixture.\n')
         manifest = {'name': 'smoke-video', 'version': '1.0.0', 'description': 'Disposable Studio test'}
         (plugin / 'plugin.json').write_text(json.dumps(manifest))
+        if compatibility:
+            (plugin / '.codex-plugin').mkdir()
+            (plugin / '.codex-plugin/plugin.json').write_text(json.dumps(dict(manifest, skills='./skills/')))
         catalog = {'name': market, 'plugins': [{'name': 'smoke-video', 'source': {'source': 'local', 'path': './video-studio'},
                     'policy': {'installation': 'AVAILABLE', 'authentication': 'ON_USE'}, 'category': 'Productivity'}]}
         (source / '.agents/plugins').mkdir(parents=True)
@@ -66,6 +69,8 @@ def main():
             assert json.loads((installed / 'plugin.json').read_text())['version'] == '1.0.0'
             manifest['version'] = '1.0.1'
             (plugin / 'plugin.json').write_text(json.dumps(manifest))
+            if compatibility:
+                (plugin / '.codex-plugin/plugin.json').write_text(json.dumps(dict(manifest, skills='./skills/')))
             (plugin / 'marker.txt').write_text('new files arrived')
             run(['git', 'add', '.'], source)
             run(['git', 'commit', '-m', 'Fixture v2'], source)
@@ -79,7 +84,7 @@ def main():
             assert json.loads((installed / 'plugin.json').read_text())['version'] == '1.0.1'
             assert (installed / 'marker.txt').read_text() == 'new files arrived'
             print('UPDATE', second, flush=True)
-            print('PASS: native Git install and update replaced cached files.', flush=True)
+            print(f'PASS: native Git install and update replaced cached files (compatibility={compatibility}).', flush=True)
         finally:
             if registered:
                 run(['codex', 'plugin', 'remove', selector, '--json'])
@@ -90,3 +95,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    main(compatibility=True)

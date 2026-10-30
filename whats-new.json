@@ -1,3 +1,4 @@
 {
-  "1.0.0": "First Codex release: native installation, individual and combined updates, and separate Codex settings."
+  "1.0.0": "First Codex release: native installation, individual and combined updates, and separate Codex settings.",
+  "1.0.1": "Verify registered versioned and local Codex caches; resolve Creator Studio setup through the installed dependency."
 }
