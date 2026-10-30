@@ -34,14 +34,14 @@ ARCH=$(uname -m)
 
 # ---- the state folder: the same answer skillenv.resolve_state() gives
 case "$OS" in
-  Darwin) STATE="$HOME/Library/Application Support/video-studio" ;;
+  Darwin) STATE="$HOME/Library/Application Support/video-studio-codex" ;;
   *)      case "${XDG_DATA_HOME:-}" in
-            /*) STATE="$XDG_DATA_HOME/video-studio" ;;
-            *)  STATE="$HOME/.local/share/video-studio" ;;
+            /*) STATE="$XDG_DATA_HOME/video-studio-codex" ;;
+            *)  STATE="$HOME/.local/share/video-studio-codex" ;;
           esac ;;
 esac
-case "${CLAUDE_PLUGIN_DATA:-}" in
-  /*/video-studio|/*/video-studio-*) STATE="$CLAUDE_PLUGIN_DATA" ;;
+case "${VIDEO_STUDIO_STATE:-}" in
+  /*/video-studio-codex|/*/video-studio-codex-*) STATE="$VIDEO_STUDIO_STATE" ;;
 esac
 prev=''
 for a in "$@"; do

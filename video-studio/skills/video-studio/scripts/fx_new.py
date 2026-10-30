@@ -78,7 +78,7 @@ def parse():
     ap.add_argument('--hi', action='store_true')
     ap.add_argument('--cutout-from')
     ap.add_argument('--no-cutout', action='store_true')
-    ap.add_argument('--prompt', default='Claude, Claude Code, skill.')
+    ap.add_argument('--prompt', default='Claude, Codex, skill.')
     ap.add_argument('--no-transcribe', action='store_true')
     ap.add_argument('--picks')
     ap.add_argument('--buyer-files')

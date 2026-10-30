@@ -159,7 +159,7 @@ def cmd_profile():
 
 # ------------------------------------------------------------------ looks
 def cmd_looks():
-    """Every look, one line each: who it suits, photo-led or type-led, niches. Claude picks the setup previews from it."""
+    """Every look, one line each: who it suits, photo-led or type-led, niches. Codex picks the setup previews from it."""
     default = R.profile().get('defaultLook', '')
     for l in R.all_looks():
         mark = ' (default)' if R.slug(l['name']) == R.slug(default) else ''
@@ -277,7 +277,7 @@ def cmd_preview_looks():
             'section p{opacity:.7;margin:4px 0 14px;max-width:760px}.row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}'
             '.row img{width:100%;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.15)}</style></head><body>'
             '<h1>Pick your carousel look</h1><p class="lead">Each look on three sample slides'
-            + (', made with your photos' if photos else '') + '. Tell Claude the number or the name. You can change anything after.</p>'
+            + (', made with your photos' if photos else '') + '. Tell Codex the number or the name. You can change anything after.</p>'
             + sections + '</body></html>')
     gallery = os.path.join(root, 'looks.html')
     with open(gallery, 'w', encoding='utf-8') as f:

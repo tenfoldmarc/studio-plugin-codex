@@ -2,7 +2,7 @@
 """Word timings for the assembled cut -> <project>/words.json (medium.en; these drive every caption).
 Any other language (skillenv.language: plan.json, the clips, config.json) uses large-v3-turbo in that language.
 
-Usage:  PY transcribe_cut.py <project_dir> ["prompt with names: Claude, Claude Code, skill"]
+Usage:  PY transcribe_cut.py <project_dir> ["prompt with names: Claude, Codex, skill"]
 Whisper mishears proper nouns ("Claude" -> "cloud"/"claws", "skill" -> "scale", "design" -> "this line"):
 pass them in the prompt and still fix captions by hand from what the speaker actually said.
 For Arabic and other non-Latin speech, write the prompt in that script ("كلود، كلود كود"): a Latin prompt is dropped.
@@ -23,7 +23,7 @@ proj = skillenv.path_arg(sys.argv[1])
 wav = os.path.join(proj, 'work', 'aroll.wav')
 os.makedirs(os.path.join(proj, 'work'), exist_ok=True)
 lang = skillenv.language(proj)
-prompt = sys.argv[2] if len(sys.argv) > 2 else ('Claude, Claude Code, skill.' if lang == 'en' else None)
+prompt = sys.argv[2] if len(sys.argv) > 2 else ('Claude, Codex, skill.' if lang == 'en' else None)
 subprocess.run([skillenv.tool('ffmpeg'), '-loglevel', 'error', '-y', '-i', os.path.join(proj, 'assets', 'aroll.mp4'), '-vn', '-ac', '1',
                 '-ar', '16000', wav], check=True)
 model = skillenv.asr_model('best', lang)

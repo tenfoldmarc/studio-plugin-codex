@@ -1,87 +1,98 @@
-# Creator Studio
+# Creator Studio for Codex
 
-You film your clips. Claude edits the reel.
+Film your clips, then ask Codex to edit them. Includes the existing editing engine, caption styles,
+effects, named editing styles, reference-video analysis and style recreation, video-to-carousel workflows,
+carousel rendering, and posting helpers. The video and carousel workflows are bundled together.
 
-This is the plugin for buyers of Creator Studio. The walkthrough videos and support are in your portal: https://portal.tenfoldmarketing.com
+For buyers of Creator Studio. Walkthrough and support: https://portal.tenfoldmarketing.com
+This edition runs locally in Codex desktop or Codex CLI. The Claude editions are separate products/repos.
 
-## Install in the Claude desktop app
+## Install once
 
-1. Open the Claude desktop app and go to the **Code** tab.
-2. Click the **+** next to the message box, then **Plugins**, then **Browse plugins**.
-3. Click **Add** in the top right, then **Add marketplace**, then **Add from a repository**.
-4. Paste this link and click **Sync**:
+Give Codex the following prompt (the account must have access to any private repository):
 
-```
-https://github.com/tenfoldmarc/studio-plugin
-```
+> Install Creator Studio for Codex from https://github.com/tenfoldmarc/studio-plugin-codex.
+> Read its README, register its Git-backed marketplace, install the plugin and verify the installed manifest.
+> Keep the source tracking main so I can request future updates.
 
-5. Install **Creator Studio** from the list.
-6. Start a new chat and type:
-
-```
-/video-studio setup
-```
-
-Setup asks where your clips land, then builds your editing style with you: send links to reels whose editing you love (or describe it, or pick from the Studio's built-in looks), and name it. It downloads its tools in the background while you do that. Your first edit dials the style in, and after that you just drop clips in and say: edit these in [your style].
-
-## Install from a terminal instead
-
-Only if you use Claude Code in Terminal (Mac) or PowerShell (Windows). Run these yourself, not inside Claude. Each line is one paste.
+Or run these native commands in Terminal or PowerShell, one line at a time:
 
 ```bash
-claude plugin marketplace add tenfoldmarc/studio-plugin
+codex plugin marketplace add tenfoldmarc/studio-plugin-codex --ref main
+codex plugin add video-studio@creator-studio-codex
 ```
+
+Then start a new Codex chat and say **"Set up Creator Studio."**
+If the desktop has not discovered the new plugins, restart the app and start a new chat.
+
+Prerequisites: a current Codex desktop/CLI, Git, and authenticated Git access for private repositories.
+The installer uses the native `codex plugin` commands available in Codex CLI 0.143.0 and later compatible releases.
+If `codex` is not on PATH, Codex can use its bundled executable or you can install the CLI from
+https://developers.openai.com/codex/cli. The editing setup obtains its own Python/Node/ffmpeg as needed.
+GitHub access is separate from signing in to Codex or connecting its GitHub app: local Git must be able to clone
+the private repositories, using a credential manager or SSH. Do not paste access tokens into chat.
+
+An optional `install.py` helper is included for an already downloaded checkout and a working Python 3.9+:
+`python install.py` installs this product ;
+`python install.py --all` installs both, Creator Studio first. Never run downloaded code from an untrusted source.
+
+## Use it
+
+- "Edit these clips in my saved style."
+- "Study this video link and recreate its editing style on my footage."
+- "Turn my last reel into a carousel."
+- "Make a carousel about [topic]."
+
+The reference workflow downloads accessible videos, reads frame/contact sheets, motion strips and transcripts,
+and compares the resulting look. For links that require a login or cannot be downloaded, supply the video file.
+External services such as Apify or posting providers may need the customer's own connection and usage credits.
+
+## Updates: just tell Codex
+
+> Update the video studio plugin and the script studio plugin.
+
+You can also say **"Update the video studio plugin"** or **"Update Script Studio"** separately.
+The loaded skill recognizes these requests, refreshes the official source, installs the package and verifies
+the installed manifest. Both requested installed plugins are attempted even if one update fails. No editing
+setup or model download is needed just to update a plugin. The updater never installs a missing paid add-on
+unless the user actually requested installation.
+
+Start one new chat after the updates to load the new instructions. This is an on-demand update; a Git push
+does not silently replace the instructions in an already running chat. A daily check during normal use can
+offer releases, and a failed/offline check leaves editing available.
+
+Native fallback for both installed products:
 
 ```bash
-claude plugin install video-studio@creator-studio
+codex plugin marketplace upgrade creator-studio-codex
+codex plugin add video-studio@creator-studio-codex
+codex plugin marketplace upgrade script-studio-codex
+codex plugin add script-studio@script-studio-codex
 ```
 
-On Windows this route needs [Git for Windows](https://git-scm.com/downloads) installed first.
+Codex calls these local package caches `local`; release versions are read from `plugin.json` rather than the
+cache folder name. The helper checks private releases using authenticated Git, not unauthenticated raw URLs.
 
-Then open Claude Code and type `/video-studio setup`.
+## Your data
 
-## Carousels
+Codex settings use `video-studio-codex` and `script-studio-codex` per-user data directories:
+macOS `~/Library/Application Support/`, Windows `%LOCALAPPDATA%/`, Linux `${XDG_DATA_HOME:-~/.local/share}/`.
+Styles, carousel looks, voice profiles, research, credentials and downloaded tools live outside the plugin cache.
+Updates replace plugin code and leave those folders and project outputs in place. Existing Claude settings are
+not imported or modified automatically. `VIDEO_STUDIO_STATE` / `SCRIPT_STUDIO_STATE` can select explicit data folders.
 
-The Studio makes carousels too, in your own look. In any chat, say:
+## Ship a release
 
-```
-make a carousel about [your topic]
-```
+1. Develop on a branch and run the automated checks.
+2. Update `video-studio/plugin.json` and `video-studio/.codex-plugin/plugin.json` to the same higher `X.Y.Z` version.
+3. Add the same version to `whats-new.json` and commit the complete release.
+4. Merge into `main` and push this Codex repository. Customers' next update request installs that release.
 
-or
+Use `python -m unittest discover -s tests` for package/updater checks. Creator Studio also retains the inherited
+cross-platform media end-to-end workflow. Local install/update smoke checks are separate from real-video quality
+and Windows testing; passing packaging tests alone does not establish editing quality on every machine.
 
-```
-turn my last reel into a carousel
-```
+Private distribution: give each buyer access to every repository included in their purchase. Removing GitHub
+access prevents future downloads/updates; it does not erase already downloaded files. No license key is bundled.
 
-The first time, it asks for your handle and your look: send screenshots of carousels you love and it rebuilds that style, or pick one of the 3 looks it comes with. Then it writes the copy for every slide, waits for your OK, designs the slides and opens a preview you can swipe through like the real post. The slides land in a Carousels folder in your home folder, ready to post.
-
-## Getting updates
-
-Fixes and new effects arrive as updates to this plugin. Your picks and your own style are kept.
-
-**The easy way:** when there is a new version, Claude tells you and asks if you want it. Say yes. You can also say this at any time:
-
-```
-update the Studio
-```
-
-**From a terminal instead:** each line is one paste.
-
-```bash
-claude plugin marketplace update creator-studio
-```
-
-```bash
-claude plugin update video-studio@creator-studio
-```
-
-Start a new chat after an update so Claude loads the new version.
-
-## Help
-
-Email info@tenfoldmarketing.com. Say what you were doing and what happened. A screenshot helps.
-
----
-
-© Ten Fold Marketing. For buyers of Creator Studio, under the terms you agreed to at purchase. Not affiliated with or endorsed by Anthropic or Instagram.
+© Ten Fold Marketing. For buyers under the terms agreed at purchase. Not affiliated with or endorsed by OpenAI.

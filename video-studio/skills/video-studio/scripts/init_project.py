@@ -8,7 +8,7 @@ Usage:  PY init_project.py <project_dir> [--my-style "<saved style name>" | --my
                Left out: the default style (my_styles.py default), or the Studio Picker picks when none is saved.
 
 Files that already exist in the project are KEPT, never overwritten, so running this twice is harmless.
-plan.json is the per-reel plan the editing Claude fills in (see references/styles.md): the pinned title from the
+plan.json is the per-reel plan the editing agent fills in (see references/styles.md): the pinned title from the
 reel's hook, any words an overall style shows on screen, and the effect slots. Standard library only.
 """
 import json

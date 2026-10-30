@@ -37,12 +37,12 @@
   Python version: if it will not install, skip that effect and say so.
 
 ## Windows (same skill, different shell)
-- Claude Code runs commands in Git Bash when Git for Windows is installed, otherwise PowerShell. Write commands
+- Codex runs commands in Git Bash when Git for Windows is installed, otherwise PowerShell. Write commands
   that work in both: full paths in double quotes with forward slashes, one command per call, no `&&`, no
   `VAR=1 cmd`, no `~` in arguments. In PowerShell start a quoted program with `&`.
 - `python3` is usually a Store stub. Use `PY` for everything; before the environment exists try `python`, then
   `py -3`, then `start.ps1` (it gets the skill its own Python when the computer has none).
-- A program installed while Claude Code is open is not found until Claude Code is fully quit and reopened.
+- A program installed while Codex is open is not found until Codex is fully quit and reopened.
 - The quick cutout has no GPU path on Windows: it runs on the processor. Run it in the background.
 - Windows opens text files as cp1252 unless told otherwise: every `open()` you write needs `encoding='utf-8'`.
 - Never put a file path inside an ffmpeg filter (drive colons break it). Pass files with `-i`.

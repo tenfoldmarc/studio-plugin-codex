@@ -5,3 +5,7 @@ __pycache__/
 .platform.json
 node_modules/
 ci/out/
+
+__pycache__/
+*.pyc
+ci/out/

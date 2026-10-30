@@ -35,7 +35,7 @@ def opt(name, default=None):
 
 ENV = dict(os.environ)
 if opt('--state'):
-    ENV['CLAUDE_PLUGIN_DATA'] = os.path.abspath(opt('--state'))
+    ENV['VIDEO_STUDIO_STATE'] = os.path.abspath(opt('--state'))
 ENV['PYTHONIOENCODING'] = 'utf-8'
 
 

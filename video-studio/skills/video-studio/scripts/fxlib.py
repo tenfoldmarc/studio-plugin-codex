@@ -5,7 +5,7 @@ Standard library only.
 An effect in effects/index.json is one of two kinds ("status"):
   ready    packaged: effects/<key>/ holds the finished machinery plus slot.json (what it needs, how it runs in a
            reel). Make a slot with fx_new.py, fill the CLIP block, run the listed commands, add it with fx_add.py.
-  recipe   the finished build of one real reel: the editing Claude adapts it by hand (see effects/INDEX.md).
+  recipe   the finished build of one real reel: the editing agent adapts it by hand (see effects/INDEX.md).
 """
 import json
 import os

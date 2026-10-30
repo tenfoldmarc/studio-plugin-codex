@@ -9,7 +9,7 @@ The marks (the "e" field of a word) tell every caption style which words to trea
   key   a name or brand                     a capitalised word that does not start a sentence ("Claude", "Instagram")
   emph  the word the line leans on          never guessed: that one is a judgement call, add it by hand
 
-This is only a first guess. The rule the editing Claude applies afterwards is in references/captions.md
+This is only a first guess. The rule the editing agent applies afterwards is in references/captions.md
 ("Marking the words"): at most one num / emph / cta per sentence, key on every name, nothing on filler words.
 Words that already carry a mark are left alone. The file before marking is kept as work/words_premarks.json.
 """

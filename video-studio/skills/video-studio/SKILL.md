@@ -1,9 +1,42 @@
 ---
 name: video-studio
-description: "Creator Studio. Setup runs once, at the first use or when the buyer asks for it ('set up the Studio', /video-studio setup). Turns raw 9:16 talking-head or voice-over clips (English, Arabic, Spanish, French, German, Portuguese, Italian or Dutch) into a finished Instagram reel in the creator's own named editing style: rebuilt from links or files of reels they love (captions, animation, overlays, pace, mixed from several examples), or one of 20 caption styles or 9 overall styles from the Studio Picker, plus the effects they like. Picks the cleanest take of every line, cuts dead air, transcribes with word timings, places captions from where the speaker actually is in the frame, and checks every result inside the Reels safe zone. Use when the user says 'edit it', 'edit these clips', 'I dropped clips in my downloads', 'cut this into a reel', 'switch my captions', 'change my effects', 'change my style', 'edit these in <style name>', 'replicate the editing style of this reel', 'copy this editing style', 'save this style', 'what styles do I have', 'make 8 variations for my trial reels', 'make N variations', 'trial reel versions', 'post it', 'post this to Instagram / TikTok / YouTube', 'post these as trial reels', 'schedule this for tomorrow', 'set up posting', 'connect my Instagram', 'open the picker', 'update the Studio', or runs /video-studio."
+description: "Creator Studio for Codex. Edit raw talking-head or voice-over clips into finished reels with clean takes, timed captions, effects and saved editing styles. Analyze a reference video link or file and recreate its typography, framing, pacing, overlays and motion on the user's footage. Also supports the style picker, reel variations and posting helpers. Use for requests to edit clips, change captions or effects, save or recreate an editing style, set up Creator Studio, or update the video studio plugin. For a request to update both Creator Studio and Script Studio, run the combined plugin updater before editing setup."
 ---
 
 # Creator Studio (video-studio)
+
+
+## Plugin installation and updates
+
+Handle an explicit plugin installation or release-update request BEFORE the setup check below.
+Updating captions, a script, or an editing style is an editing request, not a plugin release update.
+For a release update, do not open the picker, download editing models, or ask setup questions.
+The user's update request authorizes that update; do not ask them to confirm it again.
+
+This skill is installed from `video-studio@creator-studio-codex`. Its absolute folder is the directory containing
+this loaded SKILL.md. `scripts/update.py` is standard-library-only and does not need the editing environment.
+Use the working Python from the Studio's `.platform.json` when it exists, or another working Python 3.9+.
+On a Mac do not run the `/usr/bin/python3` placeholder to obtain an update; use the native commands below instead.
+
+- Update this plugin: run `PY "<this skill>/scripts/update.py"`.
+- "Update the video studio plugin and the script studio plugin", "update both Studios", or equivalent:
+  run `PY "<this skill>/scripts/update.py" --all` once. It attempts every installed Studio and reports each result.
+  Do not stop after the first plugin. Do not install an unowned/missing add-on as part of an update request.
+- Install: follow the repository README. Script Studio needs Creator Studio installed first.
+- `--check` only offers available releases; it does not install them. Explicit update requests run the updater directly.
+
+If no working Python is available, use Codex's native CLI. For this plugin:
+`codex plugin marketplace upgrade creator-studio-codex` then `codex plugin add video-studio@creator-studio-codex`.
+For a combined update, do the same for BOTH `creator-studio-codex`/`video-studio` and
+`script-studio-codex`/`script-studio`, restricted to plugins listed as installed by `codex plugin list --json`.
+The helper also discovers Codex's bundled executable; `STUDIO_CODEX_EXECUTABLE` can name an explicit executable.
+If the CLI is unavailable, explain that prerequisite using the repository README; never call Claude's CLI.
+
+Verify the manifest in each returned `installedPath` before saying it is updated. The CLI may report a cache
+version of `local`; the actual release is the `version` in `plugin.json`. Report failures individually, including
+GitHub access or authentication failures, and keep the successful results. Then tell the user to start a new
+Codex chat once for all requested updates. If the desktop still shows old instructions, restart it.
+Saved settings, styles, research, credentials and projects are outside the installed packages and stay in place.
 
 Raw clips in, finished reel out, in the buyer's own editing style. They show you reels whose editing they love (links
 or files, mixing captions from one and motion from another), or describe it, or pick from the Studio's built-in
@@ -56,13 +89,12 @@ reel against this rule before you deliver: one caption look from the first frame
 Two different things, never mixed up:
 - **The setup** (the welcome, the two folder questions, building their first style) happens ONCE, the first time,
   when `STATUS config MISSING` shows. After that it never comes back by itself. It runs again only when the buyer
-  asks: "set up the Studio again", "redo the setup", `/video-studio setup` ("First run only" below says how).
+  asks: "set up the Studio again", "redo the setup", `set up Creator Studio` ("First run only" below says how).
 - **The quiet check** below runs at the start of every chat that uses the Studio. It takes a few seconds and the
   buyer does not see it: do not announce it, do not repeat setup questions, do not list what it found. Speak only
   when it needs them (an update to offer, something missing to fix).
 
-`SK` is this skill's folder (the one holding this file): `${CLAUDE_SKILL_DIR}`, or the base directory Claude Code
-gave you when it loaded the skill. `SK` is read-only: never write into it.
+`SK` is this skill's folder (the one holding this file): the absolute directory containing this loaded `SKILL.md`. `SK` is read-only: never write into it.
 
 Run the setup check. The buyer does not need Python, Node or ffmpeg on the computer: the Studio gets its own copy
 of whatever is missing, into `ST`, with no password and nothing installed system-wide.
@@ -77,7 +109,7 @@ of whatever is missing, into `ST`, with no password and nothing installed system
 It takes a few seconds, a few minutes the very first time while it downloads what is missing and builds its own
 Python environment (say so that first time only). Only when it prints `STATUS python MISSING`, or `start.ps1` fails in any other way:
 give the fix and stop (Windows: paste `winget install --id Python.Python.3.12 -e` into PowerShell, then quit
-Claude Code completely and reopen it. Mac: download Python 3.12 from
+Codex completely and reopen it. Mac: download Python 3.12 from
 https://www.python.org/ftp/python/3.12.10/python-3.12.10-macos11.pkg and open it. Linux:
 `sudo apt install python3 python3-venv`).
 
@@ -91,7 +123,7 @@ Read the STATUS lines:
 - node, python or ffmpeg `MISSING` (only when the Studio could not fetch its own copy: no internet, or a system
   there is no build for): the line ends with the steps for THIS machine, written for someone who has never used a
   terminal. Pass them on word for word and stop until the script prints `READY`. On Windows they paste the winget
-  line into their own PowerShell window, then quit Claude Code completely and reopen it.
+  line into their own PowerShell window, then quit Codex completely and reopen it.
 - `STATUS python TOO NEW`: the Python that ran the setup is newer than the transcription engine supports. Run the
   command at the end of the line (the starter script). It gets the Studio its own Python 3.12. Nothing to install.
 - `the download did not finish, trying again (attempt 2 of 3)`: a download got stuck and the Studio started it
@@ -136,11 +168,11 @@ after the project folder (`"renders/<slug>-v1.mp4"`): `HF` and both check script
 
 ### First run only
 
-`/video-studio setup` (or "set up the Studio") is how a new buyer starts. Run Step 0, then the three steps below.
+`set up Creator Studio` (or "set up the Studio") is how a new buyer starts. Run Step 0, then the three steps below.
 Do not ask for clips until they have a style.
 
 When a buyer who is already set up asks for the setup again ("set up the video studio", "redo my setup",
-`/video-studio setup`): run Step 0, then show what they have in two plain lines (the clips folder and the projects
+`set up Creator Studio`): run Step 0, then show what they have in two plain lines (the clips folder and the projects
 folder, their saved styles and which is the default) and ask what they want to change: the folders, a new style,
 or their default. Change only that. Never wipe their styles, picks or folders.
 

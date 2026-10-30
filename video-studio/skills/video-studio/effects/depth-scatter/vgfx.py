@@ -62,7 +62,7 @@ def bare(s):
 
 
 def die(msg):
-    """a plain one-line reason the editing Claude can pass on to the buyer, then stop"""
+    """a plain one-line reason the editing agent can pass on to the buyer, then stop"""
     print('DECLINED: ' + msg)
     sys.exit(2)
 

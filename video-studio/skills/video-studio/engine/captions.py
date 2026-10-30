@@ -9,7 +9,7 @@ Every style reads <project>/words.json: [{text, start, end, e?}] where e marks t
   emph = the word the line leans on        cta = the comment keyword
 Nothing below is specific to any clip. Where the speaker is comes from <project>/layout.json (scripts/layout.py:
 head position measured on the footage, the three caption bands worked out from it). Pinned titles and any other
-per-reel text come from <project>/plan.json, written by the editing Claude from the reel's hook.
+per-reel text come from <project>/plan.json, written by the editing agent from the reel's hook.
 """
 import html
 import json
@@ -61,7 +61,7 @@ def _json(path, fallback):
 
 
 def guess_title(words):
-    """First guess at a pinned title: the opening line as two short lines. The editing Claude should write a better
+    """First guess at a pinned title: the opening line as two short lines. The editing agent should write a better
     one into plan.json ("title"); this only keeps a build from having an empty pill."""
     line = []
     for w in words:
@@ -854,7 +854,7 @@ def _num(v, default):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# MOTION: animation the editing Claude writes itself, as GSAP tweens on the reel's one timeline (references/motion.md).
+# MOTION: animation the editing agent writes itself, as GSAP tweens on the reel's one timeline (references/motion.md).
 # The renderer seeks that timeline frame by frame, so a tween here always renders exactly; css @keyframes and
 # transitions never do. Each entry is plain JSON:
 #   {"target": ".w", "tween": "from" | "to" | "fromTo" | "set", "vars": {...gsap vars...}, "from": {...},  (fromTo only)

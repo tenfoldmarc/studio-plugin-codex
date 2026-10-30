@@ -1,20 +1,3 @@
 {
-  "1.17.0": "The Studio can now update itself. Say: update the Studio.",
-  "1.18.0": "Test update. Nothing changed in the Studio.",
-  "1.19.0": "A test update so you can try updating from inside Claude. Nothing changed in the Studio.",
-  "1.20.0": "A test update so you can see how updating works. Nothing changed in the Studio.",
-  "1.21.0": "When you say yes to an update, it installs right away.",
-  "1.22.0": "Setup now gets its own Python and Node when your Mac has none, and a download that gets stuck retries by itself.",
-  "1.23.0": "Fixes a crash on the first transcription on Windows PCs with an NVIDIA graphics card.",
-  "1.24.0": "Setup no longer gets stuck when your computer has a very new Python. It uses its own Python instead.",
-  "1.25.0": "Clean cutouts now remove a painting or poster behind your head that used to show as a grey shape above it.",
-  "2.0.0": "Big one. Send me links to reels whose editing you love and I'll rebuild that style on your clips, animations included. Save as many styles as you want by name and say: edit these in [name]. Plus 14 new effects (40 in total), and setup now downloads everything up front so your first edit is quick.",
-  "2.1.0": "Trial reels. After an edit, say: make 8 variations for my trial reels. You get 8 finished versions of the same reel, each with one thing changed (the hook, the captions, the effects or your style), rendered one at a time so your computer keeps up, with a short list of what's different in each.",
-  "2.2.0": "Stronger trial reels. Every version now also gets its own speed, framing and colour on top of the one thing it tests, so none of them is a copy of another. New hooks too: an extra animation in the first seconds, or a new opening headline. Tell me which one you posted and it stays exactly as it is.",
-  "2.4.0": "New look: Viral Guy. A calm, premium talking-head style with a moody slate-teal grade, one quiet word at a time, huge words on the lines that matter, and flat word cards on the beats. Plus its own caption style and 6 new effects (46 in total): Depth Scatter, Stat Stack, Dot Counter, Chip Row, Prompt Box and Serif Flow. They sit over your footage, so they work with any style and any cut.",
-  "2.5.0": "Carousels. Say: make a carousel about [your topic], or: turn my last reel into a carousel. I write the copy for every slide first, you approve it, then I design it in your look and open a preview you can swipe like the real post. Use your own photos, stills from your videos, or pictures I generate. The first time, send me carousels you love and I'll rebuild that look, or pick from 8 looks I show you made with your own photos.",
-  "2.6.0": "I can post for you now. Say: post it, or: post my trial reels. Instagram (as normal reels or trial reels), TikTok, YouTube Shorts and Facebook, right away, at a time you pick, or a few minutes apart. It goes through Zernio, free for your first 2 accounts. The first time, I walk you through connecting your accounts. I always show you what goes where and when, and nothing goes out until you say yes.",
-  "2.6.1": "New name: Creator Studio. Same Studio, same styles. ChatGPT support is on the way.",
-  "2.6.2": "Posting setup now sends you to Zernio through my referral link. Posting works exactly the same.",
-  "2.7.0": "Arabic reels. Talk in Arabic (or Spanish, French, German, Portuguese, Italian or Dutch) and I edit it the same way, with the captions in what you actually said. In Arabic every caption style reads right to left, with Arabic letters that match its look. Before your next edit I'll ask once which language you speak. If it's not English, that first edit downloads the speech model once (about 2 GB)."
+  "1.0.0": "First Codex release: native installation, individual and combined updates, and separate Codex settings."
 }

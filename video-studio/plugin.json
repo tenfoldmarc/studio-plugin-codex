@@ -1,0 +1,19 @@
+{
+  "name": "video-studio",
+  "description": "Turns raw 9:16 talking-head clips into a finished Instagram reel in your own named editing style, rebuilt from reels you love or picked in the Studio Picker: best takes, cuts, captions, animation, 46 effects and sound. Plus carousels in your own look, from a topic or from any video, and posting to Instagram (trial reels too), TikTok and YouTube for you.",
+  "author": {
+    "name": "Marc Cleroux",
+    "url": "https://github.com/tenfoldmarc"
+  },
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "version": "1.0.0",
+  "repository": "https://github.com/tenfoldmarc/studio-plugin-codex",
+  "homepage": "https://portal.tenfoldmarketing.com",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Creator Studio for Codex"
+      }
+    }
+  }
+}

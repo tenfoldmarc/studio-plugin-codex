@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Study an example the buyer showed, top to bottom: a video (a reel they like) or a still (a pin, a screenshot).
 It pulls out everything that can be measured and lays the whole thing out as pictures to LOOK at. It does not judge
-the look: the editing Claude reads the sheets and writes the style down (references/replicate.md).
+the look: the editing agent reads the sheets and writes the style down (references/replicate.md).
 
 Usage:  PY study.py <example file> [--out <folder>] [--step 0.5] [--no-words]
 

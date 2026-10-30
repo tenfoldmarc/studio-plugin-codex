@@ -25,16 +25,16 @@ $PyVersion = '3.12.15'
 $PyRelease = '20261009'
 $PySha256  = '194c8f0d9e0de6f1c4576e5dfa67819a48c764be87608b74b8ad43387a57b93b'
 $PyUrl     = "https://github.com/astral-sh/python-build-standalone/releases/download/$PyRelease/cpython-$PyVersion%2B$PyRelease-x86_64-pc-windows-msvc-install_only.tar.gz"
-$Restart   = 'then quit Claude Code completely, reopen it and run the skill again'
+$Restart   = 'then quit Codex completely, reopen it and run the skill again'
 
 $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 # ---- the state folder: the same answer skillenv.resolve_state() gives
 $Local = $env:LOCALAPPDATA
 if (-not $Local) { $Local = Join-Path $HOME 'AppData\Local' }
-$State = Join-Path $Local 'video-studio'
-$Data = $env:CLAUDE_PLUGIN_DATA
-if ($Data -and [IO.Path]::IsPathRooted($Data) -and ((Split-Path -Leaf $Data) -match '^video-studio(-.*)?$')) { $State = $Data }
+$State = Join-Path $Local 'video-studio-codex'
+$Data = $env:VIDEO_STUDIO_STATE
+if ($Data -and [IO.Path]::IsPathRooted($Data) -and ((Split-Path -Leaf $Data) -match '^video-studio-codex(-.*)?$')) { $State = $Data }
 for ($i = 0; $i -lt $args.Count; $i++) {
     $a = [string]$args[$i]
     if ($a -eq '--state' -and ($i + 1) -lt $args.Count -and [IO.Path]::IsPathRooted([string]$args[$i + 1])) { $State = [string]$args[$i + 1] }

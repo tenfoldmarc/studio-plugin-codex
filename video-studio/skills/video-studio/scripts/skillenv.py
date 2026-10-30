@@ -27,7 +27,7 @@ import subprocess
 import sys
 
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-APP = 'video-studio'
+APP = 'video-studio-codex'
 HYPERFRAMES = 'hyperframes@0.8.34'
 MIN_NODE = 22
 # The skill's own Node, only when the computer has no Node 22+: setup.py fetches this exact version from nodejs.org
@@ -126,7 +126,7 @@ def _pm(osn):
 # ------------------------------------------------------------------ the state folder
 # Everything the skill writes for itself lives in ONE folder: .venv, .platform.json, config.json, sound effects.
 #   clone install (git clone into a skills folder): the skill folder itself, exactly as before
-#   plugin install: the code sits in a versioned cache folder that Claude Code replaces on every update, so the
+#   plugin install: the code sits in a versioned cache folder that Codex replaces on every update, so the
 #                   state goes to a per-user data folder outside it and survives updates
 _explicit_state = None
 
@@ -142,7 +142,7 @@ def set_state(path):
 
 def real_path_value(v, isabs=None):
     """True for a usable absolute path. False for nothing, and for a placeholder nobody filled in, such as a
-    literal ${CLAUDE_PLUGIN_DATA} that reached the command line unsubstituted."""
+    literal ${VIDEO_STUDIO_STATE} that reached the command line unsubstituted."""
     if not v or not str(v).strip() or re.search(r'\$\{|%\w+%|^\s*\$', v):
         return False
     isabs = isabs or (lambda p: os.path.isabs(os.path.expanduser(p)))
@@ -161,13 +161,13 @@ def own_plugin_data(v, isabs=None):
 
 
 def in_plugin_cache(path):
-    """Is this folder inside Claude Code's plugin cache (<config>/plugins/cache/<marketplace>/<plugin>/<version>)?"""
+    """Is this folder inside Codex Code's plugin cache (<config>/plugins/cache/<marketplace>/<plugin>/<version>)?"""
     parts = [p for p in re.split(r'[\\/]+', path) if p]
     return any(a == 'plugins' and b == 'cache' for a, b in zip(parts, parts[1:]))
 
 
 def user_data_dir(osn=None, environ=None, home=None):
-    """Per-user data folder for a plugin install, outside ~/.claude."""
+    """Per-user data folder for a plugin install, outside the plugin package."""
     osn = osn or os_name()[0]
     environ = os.environ if environ is None else environ
     home = home or os.path.expanduser('~')
@@ -194,7 +194,7 @@ def _venv_state(prefix=None, base_prefix=None, isfile=os.path.isfile):
 def resolve_state(explicit=None, environ=None, skill_dir=SKILL_DIR, osn=None, home=None, venv_state=None):
     """-> (state folder, why). The only place this is decided. Order:
       1. --state <dir> given to setup.py
-      2. CLAUDE_PLUGIN_DATA, when it is set to a real path that is this plugin's own data folder
+      2. VIDEO_STUDIO_STATE, when it is set to a real path that is this plugin's own data folder
       3. the folder of the .venv this interpreter runs from (scripts started with the state's Python)
       4. the per-user data folder (macOS: ~/Library/Application Support/video-studio, Windows:
          %LOCALAPPDATA%/video-studio, Linux: ~/.local/share/video-studio). Never the skill folder: the skill is
@@ -202,9 +202,9 @@ def resolve_state(explicit=None, environ=None, skill_dir=SKILL_DIR, osn=None, ho
     environ = os.environ if environ is None else environ
     if explicit:
         return explicit, '--state'
-    env = environ.get('CLAUDE_PLUGIN_DATA')
+    env = environ.get('VIDEO_STUDIO_STATE')
     if own_plugin_data(env):
-        return os.path.abspath(os.path.expanduser(env.strip())), 'CLAUDE_PLUGIN_DATA'
+        return os.path.abspath(os.path.expanduser(env.strip())), 'VIDEO_STUDIO_STATE'
     if venv_state:
         return venv_state, 'this Python environment'
     return user_data_dir(osn, environ, home), 'your Creator Studio folder, kept outside the skill so updates do not erase it'

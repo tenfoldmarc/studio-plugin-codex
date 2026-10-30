@@ -1,6 +1,6 @@
 ---
 name: carousel-studio
-description: "Creator Studio carousels. Makes finished Instagram (and LinkedIn) carousels in the creator's own look: from a topic or idea, from scratch, or from a video (a reel the Studio edited, any video file, or a link). Writes the copy for every slide first and waits for approval, then renders the slides as PNGs and opens a swipe-through preview. Pictures from their own photos, a connected drive, their video, or an image generator. First carousel only: a short setup (handle, look built from carousels they love or picked from the Studio's looks shown with their own photos). Use when the user says 'make a carousel', 'carousel about X', 'turn this video / my last reel into a carousel', 'repurpose this into a carousel', 'carousel from this transcript', 'redo slide 3', 'make a new carousel look', 'copy this carousel style', 'change my carousel look', 'set up carousels', or runs /carousel-studio."
+description: "Creator Studio carousels for Codex. Turn a topic, transcript, video file, video link or an edited reel into finished Instagram or LinkedIn carousel slides in the creator's saved look. Approve slide copy, render PNGs and open a swipe preview. Use for making carousels, video-to-carousel repurposing, changing slides, copying a carousel style, or setting up carousel looks."
 ---
 
 # Creator Studio: carousels (carousel-studio)
@@ -8,8 +8,7 @@ description: "Creator Studio carousels. Makes finished Instagram (and LinkedIn) 
 A topic, an idea or a video in. A finished carousel out, in the buyer's own look: the copy for every slide first,
 then the slides, then a preview they can swipe through like the real post.
 
-`CS` is this skill's folder (`${CLAUDE_SKILL_DIR}`, or the base directory Claude Code gave you when it loaded the
-skill). `SK` is the video Studio's skill folder next to it: `CS/../video-studio`. Both are read-only.
+`CS` is this skill's folder (the absolute directory containing this loaded `SKILL.md`). `SK` is the video Studio's skill folder next to it: `CS/../video-studio`. Both are read-only.
 
 Read before the first carousel in a chat: `references/craft.md` (what makes a carousel work: copy, hook, arc,
 hierarchy, photos) and `references/slides.md` (every slide field). Read `references/looks.md` when building or

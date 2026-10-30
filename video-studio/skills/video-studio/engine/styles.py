@@ -11,7 +11,7 @@ captions.load(project).
 
 Nothing here is typed in for a clip:
   where the speaker is      <project>/layout.json  (scripts/layout.py)
-  any words on screen       <project>/plan.json    "style": {"<style key>": {...}}  written by the editing Claude
+  any words on screen       <project>/plan.json    "style": {"<style key>": {...}}  written by the editing agent
                             (shapes are documented in references/styles.md). Every style still builds with an empty
                             plan: it falls back to the hook title, the first marked number and the comment keyword.
   extra footage (b-roll)    plan.json "style": {"<key>": {"broll": [{"src", "from", "to", "media", "zoom"}]}}
@@ -25,7 +25,7 @@ NAMES = {'soft-hours': 'Soft Hours', 'glam-cam': 'Glam Cam', 'color-block': 'Col
 NEEDS_CUTOUT = ('chalk-talk', 'show-and-tell')      # these two lift the speaker off the room: they need assets/subject.webm
 NO_SWAP = {'show-and-tell': 'Show and Tell carries the words on its light canvas, and caption styles are built for video, '
                             'so they would not read there.'}
-NOTES = []                                           # things the editing Claude should tell the buyer; build_reel prints them
+NOTES = []                                           # things the editing agent should tell the buyer; build_reel prints them
 
 
 def plan(key):

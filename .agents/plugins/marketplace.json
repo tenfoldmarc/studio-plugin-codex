@@ -1,0 +1,20 @@
+{
+  "name": "creator-studio-codex",
+  "interface": {
+    "displayName": "Creator Studio for Codex"
+  },
+  "plugins": [
+    {
+      "name": "video-studio",
+      "source": {
+        "source": "local",
+        "path": "./video-studio"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

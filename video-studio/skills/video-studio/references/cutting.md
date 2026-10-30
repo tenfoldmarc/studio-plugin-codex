@@ -38,7 +38,7 @@ clean 30fps from t=0) and writes `segments.json` (first frame and frame count of
 The last line must say the frame totals match.
 
 ## 4. Words
-`PY "SK/scripts/transcribe_cut.py" "<project>" "Claude, Claude Code, <other names said>"` writes `words.json`:
+`PY "SK/scripts/transcribe_cut.py" "<project>" "Claude, Codex, <other names said>"` writes `words.json`:
 `[{"text": "Everybody's", "start": 0.08, "end": 0.52}, ...]`. These times drive every caption, so clean them:
 - Fix mishearings by hand from what was actually said. Usual ones: "Claude" -> "cloud" / "claws" / "Claud",
   "skill" -> "scale", product names split in two ("GPT" "-6", "5" ".1": the script joins the common cases, check).

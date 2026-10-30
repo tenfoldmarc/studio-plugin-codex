@@ -195,7 +195,7 @@ def ssl_context():
 def http(method, url, headers=None, data=None, timeout=120):
     """-> (status, bytes). Network trouble raises Fail('transient')."""
     req = urllib.request.Request(url, data=data, method=method,
-                                 headers=dict(headers or {}, **{'User-Agent': 'claude-creator-studio-posting'}))
+                                 headers=dict(headers or {}, **{'User-Agent': 'codex-creator-studio-posting'}))
     try:
         with urllib.request.urlopen(req, timeout=timeout, context=ssl_context()) as r:
             return r.status, r.read()

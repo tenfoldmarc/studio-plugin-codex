@@ -1,194 +1,248 @@
 #!/usr/bin/env python3
-"""Check for a newer version of the Studio, and install it.
+"""Native Codex install/update helper. Standard library only; no editing tools are needed.
 
-Usage:  PY update.py --check     is there a newer version? (setup.py asks this once a day by itself)
-        PY update.py             install the newest version: the buyer said yes, or said "update the Studio"
-
-The Studio is a plugin: the newest version is whatever its source on GitHub holds. Installing it is done by
-Claude's own plugin command, run here so the buyer never opens a terminal. Nothing of theirs is touched: picks,
-their own style and the tools setup downloaded live in the state folder, which an update leaves alone.
-
-Lines to watch for:
-    STATUS update NONE (1.16.0 is the newest)
-    STATUS update AVAILABLE 1.16.0 -> 1.17.0 ...          ask the buyer, then run this again without --check
-    STATUS update DONE 1.16.0 -> 1.17.0 ...               tell the buyer to start a new chat
-    STATUS update SKIPPED <why>                           offline, or this copy does not update this way: carry on
-    STATUS update MANUAL <steps>                          pass the steps on word for word
-Standard library only, so it also runs before setup has finished.
+update.py                  update this plugin
+update.py --all            update both Studios that are already installed
+update.py --install --all  install Creator Studio, then Script Studio
+update.py --check          check for a release without changing installed plugin files
 """
+import argparse
 import datetime
 import json
 import os
+from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
-import urllib.error
-import urllib.request
+import tempfile
 
 sys.dont_write_bytecode = True
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import skillenv  # noqa: E402
+PRODUCTS = {
+    'video-studio': {'marketplace': 'creator-studio-codex', 'repo': 'tenfoldmarc/studio-plugin-codex',
+                     'title': 'Creator Studio'},
+    'script-studio': {'marketplace': 'script-studio-codex', 'repo': 'tenfoldmarc/script-studio-codex',
+                      'title': 'Script Studio'},
+}
+PLUGIN_ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_PRODUCT = PLUGIN_ROOT.name if PLUGIN_ROOT.name in PRODUCTS else 'video-studio'
 
-PLUGIN = 'video-studio'
-SOURCE = 'https://raw.githubusercontent.com/tenfoldmarc/studio-plugin/main/'
-MANIFEST = SOURCE + 'video-studio/.claude-plugin/plugin.json'
-NOTES = SOURCE + 'whats-new.json'
+
+class UpdateError(Exception):
+    pass
 
 
-def say(line):
-    print(line, flush=True)
+def read_json(path):
+    try:
+        with open(path, encoding='utf-8') as stream:
+            return json.load(stream)
+    except (OSError, ValueError) as exc:
+        raise UpdateError('Could not read plugin metadata.') from exc
+
+
+def version_at(folder, product):
+    manifest = read_json(Path(folder) / 'plugin.json')
+    if manifest.get('name') != product or not re.fullmatch(r'\d+\.\d+\.\d+', manifest.get('version', '')):
+        raise UpdateError('The plugin manifest has an unexpected identity or version.')
+    return manifest['version']
 
 
 def as_tuple(version):
-    return tuple(int(x) for x in re.findall(r'\d+', version or '')[:3])
+    return tuple(int(part) for part in version.split('.'))
 
 
-def installed(skill_dir=None):
-    """-> (version or None, marketplace or None, kind). kind: 'marketplace' (installed from the plugin source,
-    updates with Claude's plugin command), 'account' (arrives through the buyer's Claude account), or 'folder'
-    (copied in by hand or uploaded as a file: no version to compare)."""
-    root = os.path.dirname(os.path.dirname(os.path.abspath(skill_dir or skillenv.SKILL_DIR)))
-    version = None
+def codex_program():
+    candidates = [os.environ.get('STUDIO_CODEX_EXECUTABLE'), shutil.which('codex'),
+                  '/Applications/Codex.app/Contents/Resources/codex',
+                  '/Applications/ChatGPT.app/Contents/Resources/codex',
+                  str(Path.home() / 'Applications/Codex.app/Contents/Resources/codex')]
+    return next((item for item in candidates if item and Path(item).is_file()), None)
+
+
+def command(args, timeout=120, cwd=None):
+    env = dict(os.environ, GIT_TERMINAL_PROMPT='0')
     try:
-        with open(os.path.join(root, '.claude-plugin', 'plugin.json'), encoding='utf-8') as fh:
-            version = json.load(fh).get('version')
-    except (OSError, ValueError):
-        pass
-    parts = os.path.normpath(root).replace('\\', '/').split('/')
-    for i in range(len(parts) - 2):
-        if parts[i] == 'plugins' and parts[i + 1] == 'cache' and i + 3 < len(parts) and parts[i + 3] == PLUGIN:
-            return version, parts[i + 2], 'marketplace'
-        if parts[i] == 'plugins' and parts[i + 1] == 'synced':
-            return version, None, 'account'
-    return version, None, 'folder'
+        result = subprocess.run([str(arg) for arg in args], cwd=cwd, env=env,
+                                stdin=subprocess.DEVNULL, capture_output=True, text=True,
+                                encoding='utf-8', errors='replace', timeout=timeout)
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise UpdateError('The command could not complete. Check the connection and installed tools.') from exc
+    if result.returncode:
+        # Do not echo raw credential-helper output or URLs containing secrets.
+        raise UpdateError('The command failed. Check GitHub repository access, Git authentication, and the connection.')
+    return result.stdout
 
 
-def fetch_json(url, timeout=5):
-    req = urllib.request.Request(url, headers={'User-Agent': 'video-studio-update', 'Cache-Control': 'no-cache'})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.loads(r.read(200000).decode('utf-8', 'replace'))
-
-
-def newest():
-    """-> (version, one line on what is new or '')"""
-    version = str(fetch_json(MANIFEST).get('version') or '')
-    note = ''
+def codex_json(executable, *args):
+    output = command([executable, 'plugin', *args, '--json'])
     try:
-        note = str((fetch_json(NOTES, timeout=4) or {}).get(version) or '')[:200]
-    except (urllib.error.URLError, OSError, ValueError):
-        pass
-    return version, note
+        result = json.loads(output)
+    except ValueError as exc:
+        raise UpdateError('Codex did not return the expected JSON. Install a current Codex CLI.') from exc
+    if not isinstance(result, dict) or result.get('errors'):
+        raise UpdateError('Codex could not refresh the requested marketplace. Check repository access and try again.')
+    return result
+
+
+def installed_entry(executable, product):
+    selector = product + '@' + PRODUCTS[product]['marketplace']
+    entries = codex_json(executable, 'list').get('installed', [])
+    return next((entry for entry in entries if entry.get('pluginId') == selector), None)
+
+
+def marketplace_entry(executable, product):
+    name = PRODUCTS[product]['marketplace']
+    entries = codex_json(executable, 'marketplace', 'list').get('marketplaces', [])
+    return next((entry for entry in entries if entry.get('name') == name), None)
+
+
+def official_source(value, repo):
+    value = str(value or '').rstrip('/').removesuffix('.git')
+    return value in (repo, 'https://github.com/' + repo, 'ssh://git@github.com/' + repo, 'git@github.com:' + repo)
+
+
+def validate_source(market, product):
+    source = market.get('marketplaceSource') or {}
+    if source.get('sourceType') != 'git' or not official_source(source.get('source'), PRODUCTS[product]['repo']):
+        raise UpdateError('This marketplace is not tracking the official Codex repository. Follow the portal installation steps.')
+
+
+def installed_version(product, codex_dir=None):
+    # Local entries are cached under "local", not under the package's version number.
+    # Read the manifest itself; directory names and CLI version="local" are not release versions.
+    codex_dir = Path(codex_dir or os.environ.get('CODEX_HOME') or Path.home() / '.codex')
+    cached = codex_dir / 'plugins/cache' / PRODUCTS[product]['marketplace'] / product / 'local'
+    return version_at(cached, product)
+
+
+def update_one(executable, product, install=False):
+    info = PRODUCTS[product]
+    entry = installed_entry(executable, product)
+    if not entry and not install:
+        print(f'STATUS update SKIPPED {info["title"]}: not installed.', flush=True)
+        return False
+    before = installed_version(product) if entry else None
+    market = marketplace_entry(executable, product)
+    if not market:
+        if not install:
+            raise UpdateError('The installed plugin has no tracked marketplace. Follow the portal installation steps.')
+        codex_json(executable, 'marketplace', 'add', info['repo'], '--ref', 'main')
+        market = marketplace_entry(executable, product)
+    if not market:
+        raise UpdateError('Codex did not register the marketplace.')
+    validate_source(market, product)
+    codex_json(executable, 'marketplace', 'upgrade', info['marketplace'])
+    market = marketplace_entry(executable, product)
+    if not market or not market.get('root'):
+        raise UpdateError('Could not find the refreshed marketplace.')
+    source_root = Path(market['root']) / product
+    expected = version_at(source_root, product)
+    if before and as_tuple(expected) < as_tuple(before):
+        raise UpdateError('The source is older than the installed release. Refusing to downgrade.')
+    result = codex_json(executable, 'add', product + '@' + info['marketplace'])
+    destination = result.get('installedPath')
+    if not destination or version_at(destination, product) != expected:
+        raise UpdateError('The installed files did not match the refreshed release. Update could not be verified.')
+    if not installed_entry(executable, product):
+        raise UpdateError('Codex did not register the installed plugin.')
+    action = 'INSTALLED' if before is None else ('DONE' if before != expected else 'CURRENT')
+    print(f'STATUS update {action} {info["title"]} {before or "not installed"} -> {expected}', flush=True)
+    return before != expected
+
+
+def newest(product=DEFAULT_PRODUCT):
+    """Read release metadata using the customer's Git credentials, including private repos.
+
+    A sparse temporary clone changes no installed plugin or marketplace. Never switch a
+    private installation to an unauthenticated raw.githubusercontent.com version check.
+    """
+    info = PRODUCTS[product]
+    with tempfile.TemporaryDirectory(prefix='studio-release-check-') as scratch:
+        target = Path(scratch) / 'release'
+        command(['git', 'clone', '--depth=1', '--filter=blob:none', '--sparse', '--branch', 'main',
+                 'https://github.com/' + info['repo'] + '.git', target], timeout=45)
+        command(['git', '-C', target, 'sparse-checkout', 'set', '--no-cone',
+                 '/' + product + '/plugin.json', '/whats-new.json'], timeout=30)
+        version = version_at(target / product, product)
+        try:
+            note = str(read_json(target / 'whats-new.json').get(version) or '')[:200]
+        except UpdateError:
+            note = ''
+        return version, note
+
+
+def state_dir(product=DEFAULT_PRODUCT):
+    app = product + '-codex'
+    override = os.environ.get('VIDEO_STUDIO_STATE' if product == 'video-studio' else 'SCRIPT_STUDIO_STATE')
+    if override and Path(override).is_absolute():
+        return Path(override)
+    if sys.platform == 'darwin':
+        return Path.home() / 'Library/Application Support' / app
+    if os.name == 'nt':
+        return Path(os.environ.get('LOCALAPPDATA') or Path.home() / 'AppData/Local') / app
+    return Path(os.environ.get('XDG_DATA_HOME') or Path.home() / '.local/share') / app
 
 
 def check(state=None, force=False):
-    """One STATUS line, or None when there is nothing to say (a copy that does not update this way).
-    Asks GitHub at most once a day unless forced; the answer is kept in <state>/update-check.json."""
-    have, _, kind = installed()
-    if kind != 'marketplace' or not have:
+    product = DEFAULT_PRODUCT
+    executable = codex_program()
+    if not executable:
         return None
-    cache = os.path.join(state, 'update-check.json') if state else None
-    today = datetime.date.today().isoformat()
-    latest = note = None
-    if cache and not force:
+    try:
+        if not installed_entry(executable, product):
+            return None
+        before = installed_version(product)
+        cache = Path(state or state_dir(product)) / 'update-check.json'
+        today = datetime.date.today().isoformat()
         try:
-            with open(cache, encoding='utf-8') as fh:
-                seen = json.load(fh)
-            if seen.get('checked') == today:
-                latest, note = seen.get('latest'), seen.get('note', '')
-        except (OSError, ValueError):
-            pass
-    if not latest:
-        try:
-            latest, note = newest()
-        except (urllib.error.URLError, OSError, ValueError):
-            return 'STATUS update SKIPPED (could not reach the update source: offline is fine, carry on)'
-        if cache and latest:
+            saved = read_json(cache)
+        except UpdateError:
+            saved = {}
+        if not force and saved.get('checked') == today:
+            latest, note = saved['latest'], saved.get('note', '')
+        else:
+            latest, note = newest(product)
             try:
-                with open(cache, 'w', encoding='utf-8') as fh:
-                    json.dump({'checked': today, 'latest': latest, 'note': note}, fh)
+                cache.parent.mkdir(parents=True, exist_ok=True)
+                cache.write_text(json.dumps({'checked': today, 'latest': latest, 'note': note}), encoding='utf-8')
             except OSError:
                 pass
-    if not latest or as_tuple(latest) <= as_tuple(have):
-        return f'STATUS update NONE ({have} is the newest)'
-    what = f' What is new: {note}' if note else ''
-    return (f'STATUS update AVAILABLE {have} -> {latest}.{what} Ask the buyer now, before anything else and on its own: '
-            f'"There is an update for the Studio with fixes. Want me to install it? It takes a minute." On yes, run this '
-            f'right away and then stop (no setup questions, no picker, no edit in this chat): '
-            f'PY "{skillenv.shell_path(os.path.abspath(__file__))}"')
+        if as_tuple(latest) <= as_tuple(before):
+            return f'STATUS update NONE ({PRODUCTS[product]["title"]} {before} is current)'
+        return (f'STATUS update AVAILABLE {PRODUCTS[product]["title"]} {before} -> {latest}. {note} '
+                'Offer the update once. If the user already requested an update, run it without asking again.')
+    except (UpdateError, KeyError, TypeError, ValueError):
+        return 'STATUS update SKIPPED (release check unavailable; continue with the installed version)'
 
 
-def claude_program():
-    """The Claude Code program to run plugin commands with: the one running this chat when it says where it is
-    (the desktop app does), else the one on the PATH, else the usual install places."""
-    home = os.path.expanduser('~')
-    spots = [os.environ.get('CLAUDE_CODE_EXECPATH'), shutil.which('claude'),
-             os.path.join(home, '.claude', 'local', 'claude'), os.path.join(home, '.local', 'bin', 'claude'),
-             '/usr/local/bin/claude', '/opt/homebrew/bin/claude',
-             os.path.join(home, '.local', 'bin', 'claude.exe'),
-             os.path.join(os.environ.get('APPDATA', ''), 'npm', 'claude.cmd') if os.environ.get('APPDATA') else None]
-    return next((p for p in spots if p and os.path.isfile(p)), None)
-
-
-def manual(marketplace):
-    name = marketplace or 'creator-studio'
-    return ('STATUS update MANUAL: I could not run the update from here. Tell the buyer: "Open Terminal (Mac) or '
-            'PowerShell (Windows), not Claude, and paste these two lines one at a time, then start a new chat." '
-            f'Line 1: claude plugin marketplace update {name}   Line 2: claude plugin update {PLUGIN}@{name}')
-
-
-def run(cmd):
-    try:
-        r = subprocess.run(cmd, timeout=300, **skillenv.TEXT)
-        return r.returncode, ((r.stdout or '') + (r.stderr or '')).strip()
-    except (OSError, subprocess.SubprocessError) as e:
-        return 1, type(e).__name__
-
-
-def update():
-    have, marketplace, kind = installed()
-    if kind == 'account':
-        say('STATUS update SKIPPED: this copy arrives through the buyer\'s Claude account and updates there by itself. '
-            'Tell them to start a new chat to get the newest version.')
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('--all', action='store_true', help='process both Studios, Creator Studio first')
+    parser.add_argument('--install', action='store_true', help='also install missing plugins')
+    parser.add_argument('--check', action='store_true', help='check this plugin without modifying its installed files')
+    parser.add_argument('--force', action='store_true', help='ignore the daily release-check cache')
+    args = parser.parse_args(argv)
+    if args.check:
+        print(check(force=args.force) or 'STATUS update SKIPPED (plugin not installed)', flush=True)
         return 0
-    if kind != 'marketplace' or not have:
-        say('STATUS update SKIPPED: this copy was put in by hand, so it does not update by itself. Tell the buyer '
-            'the install steps in their portal get them the version that does.')
-        return 0
-    try:
-        latest, _ = newest()
-    except (urllib.error.URLError, OSError, ValueError):
-        say('STATUS update SKIPPED (could not reach the update source: try again when online)')
-        return 0
-    if as_tuple(latest) <= as_tuple(have):
-        say(f'STATUS update NONE ({have} is the newest)')
-        return 0
-    claude = claude_program()
-    if not claude:
-        say(manual(marketplace))
+    executable = codex_program()
+    if not executable:
+        print('STATUS update FAILED: Codex CLI was not found. Install it or set STUDIO_CODEX_EXECUTABLE to its absolute path.', flush=True)
         return 2
-    code, out = run([claude, 'plugin', 'marketplace', 'update', marketplace])
-    if code == 0:
-        code, out = run([claude, 'plugin', 'update', f'{PLUGIN}@{marketplace}'])
-    versions = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(skillenv.SKILL_DIR))))
-    got = sorted((d for d in os.listdir(versions) if os.path.isdir(os.path.join(versions, d))), key=as_tuple)[-1:] \
-        if os.path.isdir(versions) else []
-    if code != 0 or not got or as_tuple(got[0]) <= as_tuple(have):
-        say(manual(marketplace) + '   (what the update said: ' + out[-160:].replace('\n', ' ') + ')')
+    products = list(PRODUCTS) if args.all or (args.install and DEFAULT_PRODUCT == 'script-studio') else [DEFAULT_PRODUCT]
+    errors = 0
+    for product in products:
+        try:
+            update_one(executable, product, install=args.install)
+        except UpdateError as exc:
+            errors += 1
+            print(f'STATUS update FAILED {PRODUCTS[product]["title"]}: {exc}', flush=True)
+    if errors:
+        print('Some requested updates failed. Report each result; do not claim both plugins updated.', flush=True)
         return 2
-    say(f'STATUS update DONE {have} -> {got[0]}. Tell the buyer: "Updated. Start a new chat and you are on the new '
-        'version. Your picks and your style are untouched." Then stop: do nothing else in this chat.')
+    print('Finished. Start a new Codex chat to load the installed instructions. Saved settings and projects were not changed.', flush=True)
     return 0
 
 
-def main():
-    skillenv.utf8_stdio()
-    if '--check' in sys.argv:
-        line = check(skillenv.state_dir(), force='--force' in sys.argv)
-        say(line or 'STATUS update SKIPPED (this copy does not update this way)')
-        return 0
-    return update()
-
-
 if __name__ == '__main__':
-    sys.exit(main())
+    raise SystemExit(main())

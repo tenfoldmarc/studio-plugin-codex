@@ -390,7 +390,7 @@ got = int(subprocess.run([FP, '-v', 'error', '-count_frames', '-select_streams',
 if got < need:
     decline(f'the fill could not be prepared ({got} of {need} frames from {fill_src}).')
 say(f'fill: {how_fill}; focus {FILL_FOCUS}, push {FILL_PUSH[0]:.2f} to {FILL_PUSH[1]:.2f} -> work/fill.mp4 ({need} frames)')
-# a look at the fill: it must hold no person and no big text (Claude cannot skip this look)
+# a look at the fill: it must hold no person and no big text (Codex must perform this look)
 pick = [0, need // 3, 2 * need // 3, need - 1]
 frames = []
 for i in pick:

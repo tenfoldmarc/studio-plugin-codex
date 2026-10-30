@@ -47,7 +47,7 @@ SFX_NAMES = ['whoosh-short', 'pop', 'sparkle', 'click', 'click-soft', 'impact-ba
              'whoosh', 'whoosh-cinematic', 'impact-bass-2', 'riser', 'chime', 'notification', 'ping',
              'key-press', 'typing', 'error', 'glitch-1', 'glitch-2', 'glitch-3']
 SFX_URL = 'https://raw.githubusercontent.com/heygen-com/hyperframes/main/skills/media-use/audio/assets/sfx'
-RESTART = 'then quit Claude Code completely, reopen it and run the skill again'
+RESTART = 'then quit Codex completely, reopen it and run the skill again'
 
 
 def fix(what, osn):
@@ -449,7 +449,7 @@ def check_sfx(sfx):
         return os.path.isfile(p) and os.path.getsize(p) > 0
 
     home = os.path.expanduser('~')
-    for lib in (os.path.join(home, '.claude', 'skills', 'media-use', 'audio', 'assets', 'sfx'),
+    for lib in (os.path.join(home, '.agents', 'skills', 'media-use', 'audio', 'assets', 'sfx'),
                 os.path.join(home, '.agents', 'skills', 'media-use', 'audio', 'assets', 'sfx')):
         for n in SFX_NAMES:
             src = os.path.join(lib, n + '.mp3')
@@ -589,14 +589,14 @@ def state_arg(argv):
 
 
 def choose_state(argv):
-    """-> (state folder, why). An empty or unsubstituted --state (a literal ${CLAUDE_PLUGIN_DATA}) is ignored."""
+    """-> (state folder, why). An empty or unsubstituted --state (a literal ${VIDEO_STUDIO_STATE}) is ignored."""
     given = state_arg(argv)
     if given is not None and not skillenv.set_state(given):
         say('STATUS state: ignoring --state (empty or an unfilled placeholder), using the default folder')
-    env = os.environ.get('CLAUDE_PLUGIN_DATA')
+    env = os.environ.get('VIDEO_STUDIO_STATE')
     if env and not skillenv._explicit_state and not skillenv.own_plugin_data(env):
         # set, but not this skill's own data folder (another plugin exported it, or it was never filled in)
-        say(f'STATUS state: ignoring CLAUDE_PLUGIN_DATA ({env}): its last folder name has to be "{skillenv.APP}" or start '
+        say(f'STATUS state: ignoring VIDEO_STUDIO_STATE ({env}): its last folder name has to be "{skillenv.APP}" or start '
             f'with "{skillenv.APP}-" to count as this skill\'s folder. Using the default folder (or pass --state <folder>)')
     state, why = skillenv.resolve_state(skillenv._explicit_state,
                                         venv_state=None if skillenv._explicit_state else skillenv._venv_state())

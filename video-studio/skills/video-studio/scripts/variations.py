@@ -555,7 +555,7 @@ def make_hook(proj, folder, v, plan, checks):
     gaps = m.uncovered()
     if gaps:
         names = ', '.join(dict.fromkeys(w['text'].strip(',.?!') for w in old_words if w.get('e') == 'key'))
-        ok, _ = run([py, S('transcribe_cut.py'), folder, names or 'Claude, Claude Code'], 'transcribing the new opening')
+        ok, _ = run([py, S('transcribe_cut.py'), folder, names or 'Claude, Codex'], 'transcribing the new opening')
         if not ok:
             return False
         fresh = read(os.path.join(folder, 'words.json'), []) or []
